@@ -16,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 # logger set up
-logger_level=logging.INFO
+logger_level=logging.ERROR
 logger=logging.getLogger(__name__)
 logger.setLevel(logger_level)
 handler=logging.StreamHandler()
@@ -255,7 +255,7 @@ def main(BASE_URL,headers,keyword,subclassification,location,search_pattern,page
     except FileNotFoundError:
         write_df_to_xlsx(df,fullname)
     
-    logger.info(f'A total of {df.shape[0]} jobs have been saved.')
+    return f'A total of {df.shape[0]} jobs have been scraped.'
 
 
 
@@ -265,11 +265,12 @@ if __name__ == '__main__':
         'BASE_URL':r'https://www.seek.com.au',
         'headers':{'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
                 'accept':'text/html; charset=utf-8'},
+        'search_pattern':'article[data-card-type="JobCard"] > div > div > div[class="y735df0 _1akoxc50 _1akoxc56"]',
+
         # note keyword doesn't always go along with subclassification
         'keyword':'django developer',
         'subclassification':'',
         'location':'brisbane',
-        'search_pattern':'article[data-card-type="JobCard"] > div > div > div[class="y735df0 _1akoxc50 _1akoxc56"]',
         'pages_to_parse':5,
         'expiry':21,
     }
