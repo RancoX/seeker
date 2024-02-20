@@ -205,11 +205,11 @@ def write_df_to_xlsx(df,fullname):
             df_tab.to_excel(writer,sheet_name=tabname,index=False,header=True)
 
 
-def main(BASE_URL,headers,keyword,subclassification,location,search_pattern,pages_to_parse,expiry):
+def main(BASE_URL,headers,keyword,subclassification,location,search_pattern,pages_to_parse,expiry,SAVE_DIR):
     
     # get filename for future IO operations
     fname=file_name_formatter(keyword,subclassification,location)
-    fullname = BASE_DIR / fname
+    fullname = SAVE_DIR / fname
 
     # init results container
     outputs=[]
@@ -273,6 +273,7 @@ if __name__ == '__main__':
         'location':'brisbane',
         'pages_to_parse':5,
         'expiry':21,
+        'SAVE_DIR':BASE_DIR,
     }
 
     main(**kwargs)

@@ -1,7 +1,7 @@
 from PySide6.QtGui import QAction,QIcon
 from PySide6.QtWidgets import (QWidget,QApplication,QMainWindow,QVBoxLayout,QHBoxLayout,QSpinBox,
-                               QPushButton,QToolButton,QCheckBox,QLabel,QScrollArea,
-                               QLineEdit,QFormLayout,QDialog,QListView,QMessageBox,QFileDialog)
+                               QPushButton,QToolButton,QLabel,QScrollArea,
+                               QLineEdit,QFormLayout,QMessageBox,QFileDialog)
 from PySide6.QtCore import QSize,Qt
 import sys, subprocess, json
 from seek_crawler import Path, BASE_DIR, main
@@ -14,7 +14,7 @@ class MyMainWindow(QMainWindow):
         self.setWindowTitle('Seeker v1.0')
 
         # set window icon
-        icon_path=BASE_DIR/"data/images/icon.png"
+        icon_path=BASE_DIR/"data/icon.png"
         self.setWindowIcon(QIcon(str(icon_path)))
         self.setMinimumSize(QSize(800,600))
 
@@ -69,7 +69,9 @@ class MyMainWindow(QMainWindow):
         body_layout.addRow(page_widget,expiry_widget)
 
         # define save path
-        self.SAVE_DIR=BASE_DIR
+        with open(BASE_DIR / "data/args.json",'r') as rf:
+            self.SAVE_DIR=json.load(rf)['save_path'] or BASE_DIR
+
         path_label=QLabel('Excel saved at: ')
         self.save_path=QLineEdit()
         self.save_path.setText(str(self.SAVE_DIR))
@@ -81,7 +83,7 @@ class MyMainWindow(QMainWindow):
         select_folder_btn.clicked.connect(self.open_folder_selector)
 
         open_folder_btn=QToolButton()
-        open_folder_btn.setIcon(QIcon(str(BASE_DIR / 'data/images/folder.png')))
+        open_folder_btn.setIcon(QIcon(str(BASE_DIR / 'data/folder.png')))
         open_folder_btn.setMaximumSize(25,25)
         open_folder_btn.setToolTip('Open folder')
         open_folder_btn.clicked.connect(self.open_folder)
@@ -162,8 +164,8 @@ class MyMainWindow(QMainWindow):
         if dialog.exec():
             foldernames = dialog.selectedFiles()
             if foldernames:
-                self.SAVE_DIR = foldernames[0]
-                self.save_path.setText(self.SAVE_DIR)
+                self.SAVE_DIR = Path(foldernames[0])
+                self.save_path.setText(str(self.SAVE_DIR))
         self.save_path.setEnabled(False)
 
     def open_folder(self,s):
@@ -196,6 +198,7 @@ class MyMainWindow(QMainWindow):
         'location':self.location.text(),
         'pages_to_parse':self.pageNum.value(),
         'expiry':self.expiry.value(),
+        'SAVE_DIR':self.SAVE_DIR,
     }
         # execute seeker
         return_str=main(**kwargs)
@@ -216,7 +219,7 @@ class MyMainWindow(QMainWindow):
         self.update_status_bar('Finished. Ready for next seeking...')
 
     def auto_fill(self):
-        with open(BASE_DIR / "data/savedata/args.json","r") as rf:
+        with open(BASE_DIR / "data/args.json","r") as rf:
             self.kwargs=json.load(rf)
         
         # auto fill elements in UI
@@ -255,7 +258,7 @@ class MyMainWindow(QMainWindow):
             changed_flag=True
 
         if changed_flag:
-            with open(BASE_DIR / "data/savedata/args.json",'w') as wf:
+            with open(BASE_DIR / "data/args.json",'w') as wf:
                 json.dump(self.kwargs,wf,indent=4)
 
             show_msg=f"New query parameters: {self.kwargs['kw']}, subcategory: {self.kwargs['classification']}, loaction: {self.kwargs['location']}, page(s) to parse: {self.kwargs['pageNum']}, expiry days: {self.kwargs['expiry']} have been saved."
@@ -268,3 +271,5 @@ if __name__ == '__main__':
     window.show()
 
     app.exec()
+
+# pyinstaller --noconsole --icon="C:\Users\RancoXu\OneDrive - Argyle Capital Partners Pty Ltd\Desktop\Ranco\Python\Seeker\data\icon.png" --noconfirm "C:\Users\RancoXu\OneDrive - Argyle Capital Partners Pty Ltd\Desktop\Ranco\Python\Seeker\seeker.py" --paths "C:\Users\RancoXu\OneDrive - Argyle Capital Partners Pty Ltd\Desktop\Ranco\Python\Seeker\venv_seeker\Lib\site-packages"  --add-data 'seek_crawler.py;.' --add-data 'data\folder.png;.\data' --add-data 'data\args.json;.\data'
