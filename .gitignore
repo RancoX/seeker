@@ -1,3 +1,5 @@
 /venv*
 *.py[cod]
 *.html
+*.zip
+*.spec

@@ -1,17 +1,25 @@
 from PySide6.QtGui import QAction,QIcon
 from PySide6.QtWidgets import (QWidget,QApplication,QMainWindow,QVBoxLayout,QHBoxLayout,QSpinBox,
-                               QPushButton,QToolButton,QLabel,QScrollArea,
+                               QPushButton,QToolButton,QLabel,QScrollArea,QComboBox,
                                QLineEdit,QFormLayout,QMessageBox,QFileDialog)
 from PySide6.QtCore import QSize,Qt
 import sys, subprocess, json
 from seek_crawler import Path, BASE_DIR, main
+
+subcategories = ["","Accounting", "Administration & Office Support", "Advertising, Arts & Media", "Banking & Financial Services", 
+                 "Call Centre & Customer Service", "CEO & General Management", "Community Services & Development", "Construction", 
+                 "Consulting & Strategy", "Design & Architecture", "Education & Training", "Engineering", "Farming, Animals & Conservation", 
+                 "Government & Defence", "Healthcare & Medical", "Hospitality & Tourism", "Human Resources & Recruitment", 
+                 "Information & Communication Technology", "Insurance & Superannuation", "Legal", "Manufacturing, Transport & Logistics", 
+                 "Marketing & Communications", "Mining, Resources & Energy", "Real Estate & Property", "Retail & Consumer Products", 
+                 "Sales", "Science & Technology", "Self Employment", "Sport & Recreation", "Trades & Services"]
 
 class MyMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         # meta set up
-        self.setWindowTitle('Seeker v1.0')
+        self.setWindowTitle('Seeker v2.0')
 
         # set window icon
         icon_path=BASE_DIR/"data/icon.png"
@@ -35,9 +43,11 @@ class MyMainWindow(QMainWindow):
         self.kw=QLineEdit()
         self.kw.setPlaceholderText('Enter job keyword or leave blank for all (case insensitive)')
 
-        classification_label=QLabel('Subcategory: ')
-        self.classification=QLineEdit()
-        self.classification.setPlaceholderText('Enter subcategory or leave blank for all (case insensitive)')
+        classification_label=QLabel('Classification: ')
+        self.classification=QComboBox()
+        self.classification.addItems(subcategories)
+        # self.classification.setPlaceholderText('Enter subcategory or leave blank for all (case insensitive)')
+        self.classification.setCurrentIndex(0)  # which is "" means any classification
 
         location_label=QLabel('Location: ')
         self.location=QLineEdit()
@@ -71,6 +81,7 @@ class MyMainWindow(QMainWindow):
         # define save path
         with open(BASE_DIR / "data/args.json",'r') as rf:
             self.SAVE_DIR=json.load(rf)['save_path'] or BASE_DIR
+            self.SAVE_DIR=Path(self.SAVE_DIR)
 
         path_label=QLabel('Excel saved at: ')
         self.save_path=QLineEdit()
@@ -137,7 +148,7 @@ class MyMainWindow(QMainWindow):
     def show_about_info(self):
         self.display.clear()
         about_info = '''
-            =========================================== version 1.0 ==========================================
+            =========================================== version 2.0 ==========================================
             This is a software to scrape listed jobs on seek.com.au by keywords in job type, subcategory and location.
 
             It parses all jobs and ranked them by posted date, split by contract types.
@@ -149,6 +160,10 @@ class MyMainWindow(QMainWindow):
             Seeker also utilises Python multi-threading to speed up operations.
 
             @ 2024-02-19 Developed and distributed by Ranco Xu (https://github.com/RancoX)
+
+            ## Update log - v2.0
+            @ 2024-05-27 Brissy AU
+            Replaced subcategory inputbox with dropbox that matches Seek classifications, default to empty which is the same as "Any Classification"
         '''
         self.update_display_text(about_info)
 
@@ -194,7 +209,7 @@ class MyMainWindow(QMainWindow):
         
         # note keyword doesn't always go along with subclassification
         'keyword':self.kw.text(),
-        'subclassification':self.classification.text(),
+        'subclassification':self.classification.currentText(),
         'location':self.location.text(),
         'pages_to_parse':self.pageNum.value(),
         'expiry':self.expiry.value(),
@@ -229,7 +244,10 @@ class MyMainWindow(QMainWindow):
                 try:
                     target.setText(v)
                 except:
-                    target.setValue(v)
+                    if target.__class__.__name__ == 'QComboBox':
+                        target.setCurrentIndex(subcategories.index(v))
+                    else:
+                        target.setValue(v)
     
     def save_args(self):
         changed_flag=False
@@ -237,8 +255,8 @@ class MyMainWindow(QMainWindow):
             self.kwargs['kw']=self.kw.text()
             changed_flag=True
         
-        if self.kwargs['classification']!=self.classification.text():
-            self.kwargs['classification']=self.classification.text()
+        if self.kwargs['classification']!=self.classification.currentText():
+            self.kwargs['classification']=self.classification.currentText()
             changed_flag=True
         
         if self.kwargs['location']!=self.location.text():
