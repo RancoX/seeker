@@ -185,7 +185,10 @@ class MyMainWindow(QMainWindow):
 
     def open_folder(self,s):
         folder_path = Path(self.SAVE_DIR)
-        subprocess.Popen(f'explorer {folder_path}', shell=True)
+        if sys.platform == 'win32':
+            subprocess.Popen(f'explorer {folder_path}', shell=True)
+        elif sys.platform.startswith('linux'):
+            subprocess.Popen(f"xdg-open {folder_path}",shell=True)
 
     def update_display_text(self,new_text:str,clean=False):
         if clean:
