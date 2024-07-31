@@ -1,0 +1,7 @@
+/venv*
+*.py[cod]
+*.html
+*.zip
+*.spec
+*.xlsx
+Seeker_v*/
