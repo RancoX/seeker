@@ -191,7 +191,15 @@ class MyMainWindow(QMainWindow):
 
     def open_folder(self,s):
         folder_path = Path(self.SAVE_DIR)
-        subprocess.Popen(f'explorer {folder_path}', shell=True)
+        match sys.platform:
+            case 'win32':
+                subprocess.Popen(f'explorer {folder_path}', shell=True)
+            case 'linux':
+                subprocess.run(["xdg-open",folder_path])
+            case 'darwin':
+                subprocess.run(['open',folder_path])
+            case _:
+                print(f'The system type: {sys.platform} is not supported.')
 
     def update_display_text(self,new_text:str,clean=False):
         if clean:
